@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>登录 - AI文本反指纹系统</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body class="login-page">
+    <div class="login-container">
+        <h1>AI文本反指纹系统</h1>
+        <div class="login-form">
+            <div class="input-group">
+                <label for="apiKey">DeepSeek API Key</label>
+                <input type="password" id="apiKey" placeholder="请输入您的API Key">
+            </div>
+            <div id="errorMessage" class="error-message"></div>
+            <button id="loginBtn" class="primary-button">登录</button>
+        </div>
+    </div>
+    
+    <!-- 脚本加载 -->
+    <script src="utils.js"></script>
+    <script src="deepseekAPI.js"></script>
+    <script src="login.js"></script>
+</body>
+</html> 

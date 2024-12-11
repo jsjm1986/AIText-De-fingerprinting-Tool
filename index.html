@@ -1,0 +1,307 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI文本反指纹工具</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>AI文本反指纹工具</h1>
+            <button id="logoutBtn" class="logout-btn" title="退出登录">
+                退出登录
+            </button>
+        </div>
+        
+        <div class="description">
+            <p>本工具通过多种算法对AI生成的文本进行处理，降低被检测为AI生成内容的可能性。</p>
+            <div class="api-settings">
+                <p class="api-status" id="apiStatus">DeepSeek API状态：<span>检查中...</span></p>
+                <div class="api-key-input">
+                    <input type="password" id="apiKeyInput" placeholder="请输入DeepSeek API Key" />
+                    <button id="saveApiKey" class="secondary-btn">保存</button>
+                </div>
+            </div>
+        </div>
+        
+        <div class="input-section">
+            <h2>输入AI生成的文本</h2>
+            <div class="text-stats">
+                <span id="charCount">字数：0</span>
+                <span id="wordCount">词数：0</span>
+                <span id="naturalScore" title="文本自然度评分">自然度：-</span>
+            </div>
+            <textarea id="inputText" placeholder="请在此处粘贴AI生成的文本..."></textarea>
+        </div>
+
+        <div id="progressContainer" class="progress-container" style="display: none;">
+            <div class="progress-header">
+                <h3>处理进度</h3>
+                <button id="cancelBtn" class="cancel-btn">取消处理</button>
+            </div>
+            <div class="progress-steps">
+                <div class="step" data-step="analysis">
+                    <div class="step-icon">1</div>
+                    <div class="step-content">
+                        <div class="step-title">获取优化建议</div>
+                        <div class="step-progress">
+                            <div class="progress-bar"></div>
+                            <span class="progress-text">等待中</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="step" data-step="detailed_analysis">
+                    <div class="step-icon">2</div>
+                    <div class="step-content">
+                        <div class="step-title">详细分析</div>
+                        <div class="step-progress">
+                            <div class="progress-bar"></div>
+                            <span class="progress-text">等待中</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="step" data-step="apply_suggestions">
+                    <div class="step-icon">3</div>
+                    <div class="step-content">
+                        <div class="step-title">应用整体建议</div>
+                        <div class="step-progress">
+                            <div class="progress-bar"></div>
+                            <span class="progress-text">等待中</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="step" data-step="segmentation">
+                    <div class="step-icon">4</div>
+                    <div class="step-content">
+                        <div class="step-title">文本分段</div>
+                        <div class="step-progress">
+                            <div class="progress-bar"></div>
+                            <span class="progress-text">等待中</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="step" data-step="segment_optimization">
+                    <div class="step-icon">5</div>
+                    <div class="step-content">
+                        <div class="step-title">逐段优化</div>
+                        <div class="step-progress">
+                            <div class="progress-bar"></div>
+                            <span class="progress-text">等待中</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="step" data-step="combination">
+                    <div class="step-icon">6</div>
+                    <div class="step-content">
+                        <div class="step-title">文本组合</div>
+                        <div class="step-progress">
+                            <div class="progress-bar"></div>
+                            <span class="progress-text">等待中</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="progress-info">
+                <span id="timeEstimate">预计剩余时间：计算中...</span>
+                <span id="progressStatus">正在处理中...</span>
+            </div>
+        </div>
+
+        <div class="controls">
+            <div class="options-container">
+                <h3>处理选项</h3>
+                <div class="options">
+                    <div class="option-group">
+                        <label class="option-label">
+                            <input type="checkbox" id="useDeepSeek" checked>
+                            <span class="option-text">使用DeepSeek优化</span>
+                            <span class="tooltip">使用DeepSeek大模型进行深度优化</span>
+                        </label>
+                        <label class="option-label">
+                            <input type="checkbox" id="synonymReplace" checked>
+                            <span class="option-text">同义词替换</span>
+                            <span class="tooltip">使用同义词替换部分词语，保持文意的同时改变表达方式</span>
+                        </label>
+                    </div>
+                    <div class="option-group">
+                        <label class="option-label">
+                            <input type="checkbox" id="sentenceRestructure" checked>
+                            <span class="option-text">句式重组</span>
+                            <span class="tooltip">重新组织句子结构，使表达更自然</span>
+                        </label>
+                        <label class="option-label">
+                            <input type="checkbox" id="punctuationVariation" checked>
+                            <span class="option-text">标点变化</span>
+                            <span class="tooltip">随机变换标点符号，增加文本的多样性</span>
+                        </label>
+                    </div>
+                    <div class="option-group">
+                        <label class="option-label">
+                            <input type="checkbox" id="addInvisibleChars" checked>
+                            <span class="option-text">特征处理</span>
+                            <span class="tooltip">添加不可见字符，改变文本特征</span>
+                        </label>
+                        <div class="style-selector">
+                            <label for="textStyle">文本风格：</label>
+                            <select id="textStyle">
+                                <option value="default">默认</option>
+                                <option value="academic">学术性</option>
+                                <option value="casual">日常口语</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="process-controls">
+                <button id="processBtn" class="primary-btn">处理文本</button>
+                <button id="resetBtn" class="secondary-btn">重置</button>
+            </div>
+        </div>
+
+        <div class="output-section">
+            <h2>处理后的文本</h2>
+            <div class="output-controls">
+                <button id="copyBtn" class="icon-btn" title="复制到剪贴板">
+                    复制文本
+                </button>
+                <button id="compareBtn" class="icon-btn" title="对比原文">
+                    对比原文
+                </button>
+                <button id="analyzeBtn" class="icon-btn" title="分析文本">
+                    分析评分
+                </button>
+                <div class="export-dropdown">
+                    <button class="icon-btn">导出报告</button>
+                    <div class="dropdown-content">
+                        <button id="exportHtmlBtn">导出HTML</button>
+                        <button id="exportPdfBtn">导出PDF</button>
+                        <button id="exportMarkdownBtn">导出Markdown</button>
+                    </div>
+                </div>
+            </div>
+            <textarea id="outputText" readonly placeholder="处理后的文本将显示在这里..."></textarea>
+        </div>
+
+        <div class="history-panel">
+            <div class="panel-header">
+                <h3>历史记录</h3>
+                <button id="clearHistoryBtn" class="clear-btn" title="清空历史记录">
+                    清空历史
+                </button>
+            </div>
+            <div id="historyList" class="history-list">
+                <!-- 历史记录将在这里动态显示 -->
+            </div>
+        </div>
+
+        <div id="analysisPanel" class="analysis-panel">
+            <div class="panel-header">
+                <h3>处理分析报告</h3>
+                <button id="closeAnalysisBtn" class="close-btn">&times;</button>
+            </div>
+            
+            <div class="panel-content">
+                <div class="analysis-section">
+                    <h4>处理过程详情</h4>
+                    <div id="processingDetails" class="details-list">
+                        <!-- 处理步骤将在这里动态显示 -->
+                    </div>
+                </div>
+
+                <div class="analysis-section">
+                    <h4>文本对比分析</h4>
+                    <div class="comparison-stats">
+                        <div class="stat-item">
+                            <span class="stat-label">原文字数</span>
+                            <span id="originalWordCount" class="stat-value">0</span>
+                        </div>
+                        <div class="stat-item">
+                            <span class="stat-label">处理后字数</span>
+                            <span id="processedWordCount" class="stat-value">0</span>
+                        </div>
+                        <div class="stat-item">
+                            <span class="stat-label">变化率</span>
+                            <span id="changeRate" class="stat-value">0%</span>
+                        </div>
+                    </div>
+                    <div id="textComparison" class="text-comparison">
+                        <!-- 文本对比将在这里显示 -->
+                    </div>
+                </div>
+
+                <div class="analysis-section">
+                    <h4>优化建议</h4>
+                    <div id="optimizationSuggestions" class="suggestions-list">
+                        <!-- 优化建议将在这里显示 -->
+                    </div>
+                </div>
+
+                <div class="analysis-section">
+                    <h4>自然度评分</h4>
+                    <div class="naturalness-score">
+                        <div class="score-circle">
+                            <span id="scoreValue">-</span>
+                            <span class="score-label">分</span>
+                        </div>
+                        <div class="score-details">
+                            <div class="score-item">
+                                <span class="item-label" data-category="语言自然度">语言自然度</span>
+                                <div class="score-bar">
+                                    <div class="bar-fill" style="width: 0%"></div>
+                                </div>
+                            </div>
+                            <div class="score-item">
+                                <span class="item-label" data-category="结构多样性">结构多样性</span>
+                                <div class="score-bar">
+                                    <div class="bar-fill" style="width: 0%"></div>
+                                </div>
+                            </div>
+                            <div class="score-item">
+                                <span class="item-label" data-category="情感表达">情感表达</span>
+                                <div class="score-bar">
+                                    <div class="bar-fill" style="width: 0%"></div>
+                                </div>
+                            </div>
+                            <div class="score-item">
+                                <span class="item-label" data-category="逻辑连贯性">逻辑连贯性</span>
+                                <div class="score-bar">
+                                    <div class="bar-fill" style="width: 0%"></div>
+                                </div>
+                            </div>
+                            <div class="score-item">
+                                <span class="item-label" data-category="AI特征">AI特征</span>
+                                <div class="score-bar">
+                                    <div class="bar-fill" style="width: 0%"></div>
+                                </div>
+                            </div>
+                            <div id="analysisResult" class="analysis-result">
+                                <!-- 分析结果将在这里显示 -->
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="tips">
+            <h3>使用提示</h3>
+            <ul>
+                <li>建议启用DeepSeek优化以获得最佳效果</li>
+                <li>可以选择不同的文本风格来适应不同场景</li>
+                <li>处理后可以查看详细分析报告</li>
+                <li>可以导出分析报告或查看历史记录</li>
+                <li>双击输出框可快速复制文本</li>
+            </ul>
+        </div>
+    </div>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+    <script src="deepseekAPI.js"></script>
+    <script src="utils.js"></script>
+    <script src="synonyms.js"></script>
+    <script src="textProcessor.js"></script>
+    <script src="main.js"></script>
+</body>
+</html> 
