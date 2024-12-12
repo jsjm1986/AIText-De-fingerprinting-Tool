@@ -1,6 +1,10 @@
 document.addEventListener('DOMContentLoaded', () => {
     // 初始化 DeepSeek API
-    window.initializeDeepSeekAPI();
+    try {
+        window.deepseekAPI = new DeepSeekAPI();
+    } catch (error) {
+        console.log('初始化延迟：等待API Key');
+    }
 
     // 获取DOM元素
     const inputText = document.getElementById('inputText');
@@ -44,6 +48,19 @@ document.addEventListener('DOMContentLoaded', () => {
     // 历史记录管理
     const MAX_HISTORY = 10;
     let textHistory = JSON.parse(localStorage.getItem('textHistory') || '[]');
+
+    // 添加清空历史记录功能
+    const clearHistoryBtn = document.getElementById('clearHistoryBtn');
+    if (clearHistoryBtn) {
+        clearHistoryBtn.addEventListener('click', () => {
+            if (confirm('确定要清空所有历史记录吗？此操作不可恢复。')) {
+                textHistory = [];
+                localStorage.removeItem('textHistory');
+                updateHistoryDisplay();
+                showNotification('历史记录已清空', 'success');
+            }
+        });
+    }
 
     function addToHistory(originalText, processedText, analysis) {
         const timestamp = new Date().toISOString();
@@ -403,7 +420,7 @@ document.addEventListener('DOMContentLoaded', () => {
         progressBar.style.width = `${progress}%`;
         progressText.textContent = status || `${progress}%`;
 
-        // 更新步骤��态
+        // 更新步骤状态
         document.querySelectorAll('.step').forEach(el => {
             const stepNumber = parseInt(el.querySelector('.step-icon').textContent);
             const currentStepNumber = parseInt(stepElement.querySelector('.step-icon').textContent);
@@ -976,6 +993,13 @@ document.addEventListener('DOMContentLoaded', () => {
     const savedApiKey = localStorage.getItem('deepseek_api_key');
     if (savedApiKey) {
         apiKeyInput.value = savedApiKey;
+        // 重新初始化API
+        try {
+            window.deepseekAPI = new DeepSeekAPI(savedApiKey);
+            checkAPIStatus();
+        } catch (error) {
+            console.error('初始化API失败：', error);
+        }
     }
 
     // 保存API Key按钮点击事件
@@ -983,31 +1007,135 @@ document.addEventListener('DOMContentLoaded', () => {
         const apiKey = apiKeyInput.value.trim();
         if (!apiKey) {
             showNotification('请输入API Key', 'warning');
+            apiKeyInput.focus();
             return;
         }
 
+        // 显示加载状态
+        saveApiKeyBtn.disabled = true;
+        saveApiKeyBtn.textContent = '验证中...';
+        apiKeyInput.disabled = true;
+
         try {
-            await window.deepseekAPI.setAPIKey(apiKey);
-            showNotification('API Key保存成功', 'success');
+            // 创建新的API实例
+            const newAPI = new DeepSeekAPI(apiKey);
+            // 验证API Key
+            const status = await newAPI.checkStatus();
             
-            // 更新API状态
-            const status = await checkAPIStatus();
-            if (status) {
+            if (status.status === 'ok') {
+                // 保存API Key
+                localStorage.setItem('deepseek_api_key', apiKey);
+                // 更新全局API实例
+                window.deepseekAPI = newAPI;
+                showNotification('API Key保存成功', 'success');
+                
+                // 更新API状态
+                await checkAPIStatus();
                 // 如果API在线，启用DeepSeek选项
                 if (useDeepSeek) {
                     useDeepSeek.disabled = false;
                 }
+            } else {
+                throw new Error('API验证失败');
             }
         } catch (error) {
             console.error('保存API Key时出错：', error);
             showNotification('API Key无效，请检查后重试', 'error');
+            apiKeyInput.focus();
+        } finally {
+            // 恢复按钮状态
+            saveApiKeyBtn.disabled = false;
+            saveApiKeyBtn.textContent = '保存';
+            apiKeyInput.disabled = false;
         }
+    });
+
+    // 输入框事件处理
+    apiKeyInput.addEventListener('input', () => {
+        // 当输入内容改变时，更新保存按钮状态
+        const apiKey = apiKeyInput.value.trim();
+        saveApiKeyBtn.disabled = !apiKey;
     });
 
     // 按Enter键保存API Key
     apiKeyInput.addEventListener('keypress', (e) => {
-        if (e.key === 'Enter') {
+        if (e.key === 'Enter' && !saveApiKeyBtn.disabled) {
             saveApiKeyBtn.click();
+        }
+    });
+
+    // 使用指南展开/收起功能
+    const toggleGuideBtn = document.getElementById('toggleGuideBtn');
+    const usageContent = document.getElementById('usageContent');
+    
+    if (toggleGuideBtn && usageContent) {
+        toggleGuideBtn.addEventListener('click', () => {
+            usageContent.classList.toggle('show');
+            toggleGuideBtn.textContent = usageContent.classList.contains('show') ? '收起' : '展开';
+        });
+    }
+
+    // 添加特性项的动画效果
+    const featureItems = document.querySelectorAll('.feature-item');
+    featureItems.forEach((item, index) => {
+        item.style.animationDelay = `${index * 0.1}s`;
+        item.classList.add('fade-in');
+    });
+
+    // 使用指南弹窗功能
+    const showGuideBtn = document.getElementById('showGuideBtn');
+    const guideModal = document.getElementById('guideModal');
+    const closeModalBtns = document.querySelectorAll('.close-modal, .close-guide');
+    
+    // 显示弹窗
+    function showModal(modal) {
+        document.body.style.overflow = 'hidden'; // 防止背景滚动
+        modal.classList.add('show');
+        setTimeout(() => {
+            modal.querySelector('.modal-content').style.transform = 'translateY(0)';
+        }, 10);
+    }
+    
+    // 隐藏弹窗
+    function hideModal(modal) {
+        modal.querySelector('.modal-content').style.transform = 'translateY(-20px)';
+        setTimeout(() => {
+            modal.classList.remove('show');
+            document.body.style.overflow = '';
+        }, 300);
+    }
+    
+    // 点击显示使用指南
+    if (showGuideBtn && guideModal) {
+        showGuideBtn.addEventListener('click', () => {
+            showModal(guideModal);
+        });
+    }
+    
+    // 关闭弹窗
+    closeModalBtns.forEach(btn => {
+        btn.addEventListener('click', () => {
+            const modal = btn.closest('.modal');
+            if (modal) {
+                hideModal(modal);
+            }
+        });
+    });
+    
+    // 点击弹窗背景关闭
+    window.addEventListener('click', (e) => {
+        if (e.target.classList.contains('modal')) {
+            hideModal(e.target);
+        }
+    });
+    
+    // ESC键关闭弹窗
+    document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape') {
+            const visibleModal = document.querySelector('.modal.show');
+            if (visibleModal) {
+                hideModal(visibleModal);
+            }
         }
     });
 }); 

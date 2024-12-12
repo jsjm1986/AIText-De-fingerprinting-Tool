@@ -10,6 +10,31 @@ class DeepSeekAPI {
         this.progressCallback = null;
     }
 
+    // 添加静态登出方法
+    static logout() {
+        localStorage.removeItem('deepseek_api_key');
+        window.location.href = 'login.html';
+    }
+
+    // 添加设置API Key的方法
+    async setAPIKey(apiKey) {
+        if (!apiKey) {
+            throw new Error('API Key不能为空');
+        }
+
+        // 验证API Key是否有效
+        const testAPI = new DeepSeekAPI(apiKey);
+        const status = await testAPI.checkStatus();
+        
+        if (status.status === 'ok') {
+            localStorage.setItem('deepseek_api_key', apiKey);
+            this.apiKey = apiKey;
+            return true;
+        } else {
+            throw new Error('无效的API Key');
+        }
+    }
+
     setProgressCallback(callback) {
         this.progressCallback = callback;
     }

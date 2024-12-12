@@ -10,13 +10,53 @@
     <div class="container">
         <div class="header">
             <h1>AI文本反指纹工具</h1>
-            <button id="logoutBtn" class="logout-btn" title="退出登录">
-                退出登录
-            </button>
+            <div class="header-buttons">
+                <button id="showGuideBtn" class="guide-btn" title="查看使用指南">
+                    <span class="guide-icon">❔</span>
+                    使用指南
+                </button>
+                <button id="logoutBtn" class="logout-btn" title="退出登录">
+                    退出登录
+                </button>
+            </div>
+        </div>
+        
+        <div class="intro-section">
+            <div class="intro-header">
+                <h2>项目介绍</h2>
+                <span class="version-tag">V1.0</span>
+            </div>
+            <div class="intro-content">
+                <p class="intro-description">
+                    本工具是一个专业的AI文本优化系统，通过多种算法对AI生成的文本进行深度优化，
+                    提升文本的自然度和可读性，同时有效降低被检测为AI生成内容的可能性。
+                </p>
+                <div class="feature-grid">
+                    <div class="feature-item">
+                        <div class="feature-icon">📊</div>
+                        <h3>智能分析</h3>
+                        <p>多维度文本分析，实时评分反馈</p>
+                    </div>
+                    <div class="feature-item">
+                        <div class="feature-icon">🔄</div>
+                        <h3>深度优化</h3>
+                        <p>智能同义词替换，句式结构重组</p>
+                    </div>
+                    <div class="feature-item">
+                        <div class="feature-icon">🎯</div>
+                        <h3>特征消除</h3>
+                        <p>去除AI特征，增加人性化表达</p>
+                    </div>
+                    <div class="feature-item">
+                        <div class="feature-icon">📝</div>
+                        <h3>风格调整</h3>
+                        <p>支持多种文本风格转换</p>
+                    </div>
+                </div>
+            </div>
         </div>
         
         <div class="description">
-            <p>本工具通过多种算法对AI生成的文本进行处理，降低被检测为AI生成内容的可能性。</p>
             <div class="api-settings">
                 <p class="api-status" id="apiStatus">DeepSeek API状态：<span>检查中...</span></p>
                 <div class="api-key-input">
@@ -25,7 +65,7 @@
                 </div>
             </div>
         </div>
-        
+
         <div class="input-section">
             <h2>输入AI生成的文本</h2>
             <div class="text-stats">
@@ -303,5 +343,55 @@
     <script src="synonyms.js"></script>
     <script src="textProcessor.js"></script>
     <script src="main.js"></script>
+    <div id="guideModal" class="modal">
+        <div class="modal-content guide-modal">
+            <div class="modal-header">
+                <h2>使用指南</h2>
+                <button class="close-modal">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="guide-steps">
+                    <div class="guide-step">
+                        <span class="step-number">1</span>
+                        <div class="step-content">
+                            <h3>配置API</h3>
+                            <p>输入您的DeepSeek API Key并保存，确保API状态显示为"在线"</p>
+                        </div>
+                    </div>
+                    <div class="guide-step">
+                        <span class="step-number">2</span>
+                        <div class="step-content">
+                            <h3>输入文本</h3>
+                            <p>在输入框中粘贴需要处理的AI生成文本</p>
+                        </div>
+                    </div>
+                    <div class="guide-step">
+                        <span class="step-number">3</span>
+                        <div class="step-content">
+                            <h3>选择选项</h3>
+                            <p>根据需求选择处理选项和目标文本风格</p>
+                        </div>
+                    </div>
+                    <div class="guide-step">
+                        <span class="step-number">4</span>
+                        <div class="step-content">
+                            <h3>处理文本</h3>
+                            <p>点击"处理文本"按钮，等待处理完成</p>
+                        </div>
+                    </div>
+                    <div class="guide-step">
+                        <span class="step-number">5</span>
+                        <div class="step-content">
+                            <h3>查看结果</h3>
+                            <p>在输出区域查看处理后的文本，可以查看分析报告或导出结果</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="primary-btn close-guide">我知道了</button>
+            </div>
+        </div>
+    </div>
 </body>
 </html> 
